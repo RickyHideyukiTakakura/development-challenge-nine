@@ -23,7 +23,23 @@ class PatientsController {
     return response.json();
   }
 
-  async index(request, response) {}
+  async index(request, response) {
+    const { name, email } = request.query;
+
+    let patient = knex("patients");
+
+    if (name) {
+      patient = patient.whereLike("name", `%${name}%`);
+    }
+
+    if (email) {
+      patient = patient.whereLike("email", `%${email}%`);
+    }
+
+    const filteredPatients = await patient.select("*");
+
+    return response.json(filteredPatients);
+  }
 
   async show(request, response) {
     const { id } = request.params;
