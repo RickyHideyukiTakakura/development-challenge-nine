@@ -2,11 +2,15 @@ require("express-async-errors");
 const express = require("express");
 const routes = require("./routes");
 const AppError = require("./utils/AppError");
+const uploadConfig = require("./configs/upload");
+const cors = require("cors");
 
 const PORT = 3333;
 const app = express();
 
+app.use("/files", express.static(uploadConfig.UPLOADS_FOLDER));
 app.use(express.json());
+app.use(cors());
 app.use(routes);
 
 app.use((error, request, response, next) => {

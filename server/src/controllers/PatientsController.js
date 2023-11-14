@@ -3,7 +3,7 @@ const AppError = require("../utils/AppError");
 
 class PatientsController {
   async create(request, response) {
-    const { name, birth_date, email, address } = request.body;
+    const { name, birth_date, email, address, avatar = null } = request.body;
 
     const checkIfPatientAlreadyExists = await knex("patients")
       .where({ email })
@@ -18,25 +18,22 @@ class PatientsController {
       birth_date,
       email,
       address,
+      avatar,
     });
 
     return response.json();
   }
 
   async index(request, response) {
-    const { name, email } = request.query;
+    const { name } = request.query;
 
     let patient = knex("patients");
 
     if (name) {
-      patient = patient.whereLike("name", `%${name}%`);
+      patient = patient.whereLike("name", `%${search}%`);
     }
 
-    if (email) {
-      patient = patient.whereLike("email", `%${email}%`);
-    }
-
-    const filteredPatients = await patient.select("*");
+    const filteredPatients = await patient.select("");
 
     return response.json(filteredPatients);
   }
@@ -63,12 +60,12 @@ class PatientsController {
       throw new AppError("Patient not found");
     }
 
-    if (email) {
+    if (email && email !== patient.email) {
       const patientWithUpdatedEmail = await knex("patients")
         .where({ email })
         .first();
 
-      if (patientWithUpdatedEmail && patientWithUpdatedEmail.id !== id) {
+      if (patientWithUpdatedEmail) {
         throw new AppError("Email already exists");
       }
     }
