@@ -11,8 +11,8 @@ export function Router() {
       <Route path="/" element={<DefaultLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/new" element={<New />} />
-        <Route path="/edit" element={<Edit />} />
-        <Route path="/details" element={<Details />} />
+        <Route path="/edit/:id" element={<Edit />} />
+        <Route path="/details/:id" element={<Details />} />
       </Route>
     </Routes>
   );

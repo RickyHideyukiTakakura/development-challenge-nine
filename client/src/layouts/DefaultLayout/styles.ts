@@ -3,7 +3,7 @@ import styled from "styled-components";
 export const LayoutContainer = styled.div`
   height: calc(100vh - 8rem);
 
-  padding: 0 12rem;
+  padding: 0 5rem;
 `;
 
 export const Separator = styled.div`

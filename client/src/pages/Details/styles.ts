@@ -3,6 +3,8 @@ import styled from "styled-components";
 export const DetailsContainer = styled.main`
   height: 100%;
 
+  position: relative;
+
   display: flex;
   justify-content: center;
   align-items: center;

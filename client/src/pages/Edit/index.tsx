@@ -1,10 +1,12 @@
 import { PatientForm } from "../../components/PatientForm";
+import { ReturnButton } from "../../components/ReturnButton";
 import { EditContainer } from "./styles";
 
 export function Edit() {
   return (
     <EditContainer>
-      <PatientForm onDelete={"a"} title="Update patient" />
+      <ReturnButton />
+      <PatientForm title="Update patient" />
     </EditContainer>
   );
 }
