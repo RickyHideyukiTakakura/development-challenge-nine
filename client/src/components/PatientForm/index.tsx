@@ -1,26 +1,17 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import { Button, TextField } from "@mui/material";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import avatarPlaceholder from "../../assets/avatar_placeholder.jpeg";
+import { PatientProps } from "../../pages/Home/components/PatientsList";
 import { api } from "../../services/api";
 import { Avatar, AvatarInput, ButtonContainer, FormContainer } from "./styles";
 
 interface PatientFormProps {
   title: string;
   isNewPatient?: boolean;
-}
-
-interface PatientProps {
-  id: string;
-  name: string;
-  email: string;
-  birth_date: string;
-  address: string;
-  avatar: string;
 }
 
 export function PatientForm({ title, isNewPatient }: PatientFormProps) {
@@ -36,7 +27,7 @@ export function PatientForm({ title, isNewPatient }: PatientFormProps) {
   const [birthDate, setBirthDate] = useState("");
   const [address, setAddress] = useState("");
   const [avatar, setAvatar] = useState(avatarUrl);
-  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const params = useParams();
   const navigate = useNavigate();
 
@@ -49,84 +40,121 @@ export function PatientForm({ title, isNewPatient }: PatientFormProps) {
     return format(date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
   }
 
-  async function uploadAvatar(avatarFile: any) {
-    const avatarFormData = new FormData();
-    avatarFormData.append("avatar", avatarFile);
+  async function uploadAvatar(avatarFile: File) {
+    try {
+      const avatarFormData = new FormData();
+      avatarFormData.append("avatar", avatarFile);
 
-    const {
-      data: { filename },
-    } = await api.post("/patients/avatar", avatarFormData);
+      const {
+        data: { filename },
+      } = await api.post("/patients/avatar", avatarFormData);
 
-    return filename;
-  }
-
-  async function updateAvatarFile(patient: any, avatarFile: any) {
-    if (avatarFile) {
-      const fileUploadForm = new FormData();
-      fileUploadForm.append("avatar", avatarFile);
-
-      const response = await api.patch(
-        `/patients/${params.id}/avatar`,
-        fileUploadForm
-      );
-
-      patient.avatar = response.data.avatar;
+      return filename;
+    } catch (error) {
+      console.error("Error uploading avatar:", error);
+      throw error;
     }
   }
 
-  function handleChanceAvatar(event: any) {
-    const file = event.target.files[0];
+  async function updateAvatarFile(patient: PatientProps, avatarFilename: File) {
+    try {
+      if (avatarFilename) {
+        const fileUploadForm = new FormData();
+        fileUploadForm.append("avatar", avatarFilename);
 
-    setAvatarFile(file);
+        const response = await api.patch(
+          `/patients/${params.id}/avatar`,
+          fileUploadForm
+        );
 
-    const imagePreview = URL.createObjectURL(file);
-    setAvatar(imagePreview);
+        patient.avatar = response.data.avatar;
+      }
+    } catch (error) {
+      console.error("Error updating patient avatar:", error);
+      alert("Failed to update avatar. Please try again.");
+    }
+  }
+
+  function handleChangeAvatar(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files && event.target.files[0];
+
+    if (file) {
+      setAvatarFile(file);
+
+      const imagePreview = URL.createObjectURL(file);
+      setAvatar(imagePreview);
+    }
   }
 
   async function handleNewPatient() {
-    if (!name || !email || !birthDate || !address) {
-      return alert("Please fill all fields");
+    try {
+      if (!name || !email || !birthDate || !address) {
+        return alert("Please fill all fields");
+      }
+
+      const uploadedAvatarFileName = avatarFile
+        ? await uploadAvatar(avatarFile)
+        : "";
+
+      const newPatient = {
+        name,
+        email,
+        birth_date: formatDate(birthDate),
+        address,
+        avatar: uploadedAvatarFileName,
+      };
+
+      await api.post("/patients", newPatient);
+
+      alert("Patient has been created successfully");
+      navigate("/");
+    } catch (error) {
+      console.error("Error creating new patient:", error);
+      alert("Failed to create patient. Please try again.");
     }
-
-    const uploadedAvatarFileName = await uploadAvatar(avatarFile);
-
-    const newPatient = {
-      name,
-      email,
-      birth_date: formatDate(birthDate),
-      address,
-      avatar: uploadedAvatarFileName,
-    };
-
-    await api.post("/patients", newPatient);
-
-    alert("Patient has been created successfully");
-    navigate("/");
   }
 
   async function handleUpdatePatient() {
-    if (!patient) {
-      return alert("Patient data is missing");
+    try {
+      if (!patient) {
+        return alert("Patient data is missing");
+      }
+
+      const updatePatient = {
+        name: name || patient.name,
+        email: email || patient.email,
+        birth_date: formatDate(birthDate) || patient.birth_date,
+        address: address || patient.address,
+      };
+
+      if (avatarFile) {
+        await updateAvatarFile(patient, avatarFile);
+      }
+
+      await api.put(`/patients/${params.id}`, updatePatient);
+
+      alert("Patient has been updated successfully");
+      navigate(-1);
+    } catch (error) {
+      console.error("Error updating patient:", error);
+      alert("Failed to update patient. Please try again.");
     }
-
-    const updatePatient = {
-      name: name || patient.name,
-      email: email || patient.email,
-      birth_date: formatDate(birthDate) || patient.birth_date,
-      address: address || patient.address,
-    };
-
-    await updateAvatarFile(patient, avatarFile);
-
-    await api.put(`/patients/${params.id}`, updatePatient);
-
-    alert("Patient has been updated successfully");
-    navigate(-1);
   }
 
   async function handleDeletePatient() {
-    await api.delete(`/patients/${params.id}`);
-    navigate("/");
+    const confirm = window.confirm(
+      "Are you sure you want to delete this patient?"
+    );
+
+    if (confirm) {
+      try {
+        await api.delete(`/patients/${params.id}`);
+        navigate("/");
+      } catch (error) {
+        console.error("Error deleting patient:", error);
+        alert("Failed to delete patient. Please try again.");
+      }
+    }
   }
 
   function handleSubmitPatient() {
@@ -150,7 +178,7 @@ export function PatientForm({ title, isNewPatient }: PatientFormProps) {
         <AvatarInput htmlFor="avatar">
           <CameraAltIcon />
 
-          <input id="avatar" type="file" onChange={handleChanceAvatar} />
+          <input id="avatar" type="file" onChange={handleChangeAvatar} />
         </AvatarInput>
       </Avatar>
 

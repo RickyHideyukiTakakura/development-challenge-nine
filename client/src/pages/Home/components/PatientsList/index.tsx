@@ -9,13 +9,13 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import avatarPlaceholder from "../../../../assets/avatar_placeholder.jpeg";
 import { api } from "../../../../services/api";
 import { Avatar, PatientList } from "./styles";
 
-interface PatientProps {
+export interface PatientProps {
   id: string;
   name: string;
   email: string;
@@ -30,10 +30,10 @@ export function PatientsList() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
+  const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const search = searchParams.get("search") || "";
-  const navigate = useNavigate();
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -44,7 +44,7 @@ export function PatientsList() {
 
   const totalPages = Math.ceil(filteredPatients.length / itemsPerPage);
 
-  function handlePageChange(event: React.ChangeEvent<unknown>, page: number) {
+  function handlePageChange(event: ChangeEvent<unknown>, page: number) {
     setCurrentPage(page);
   }
 
