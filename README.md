@@ -1,5 +1,64 @@
 # Development challenge
 
+Project developed for the full-stack developer challenge.
+
+## Technologies
+
+### Front-end
+
+- [ReactJS](https://react.dev/)
+- [Typescript](https://www.typescriptlang.org/)
+- [Material UI](https://mui.com/material-ui/)
+- [Styled-Components](https://styled-components.com/)
+- [Axios](https://axios-http.com/)
+
+### Back-end
+
+- [NodeJS](https://nodejs.org/en)
+- [Express](https://expressjs.com/pt-br/)
+- [Knex](https://knexjs.org/)
+- [SQLite3](https://www.sqlite.org/index.html)
+- [Multer](https://www.npmjs.com/package/multer)
+
+## Previews
+
+- Home page
+  ![Home page](./assets/home.png)
+- Register patient page
+  ![New page](./assets/register-patient.png)
+- Details page
+  ![Details page](./assets/details.png)
+- Edit patient page
+  ![Edit page](./assets//edit-patient.png)
+
+## Instructions
+
+To get started, clone this repository to your local machine using the following command:
+
+```bash
+git clone https://github.com/RickyHideyukiTakakura/development-challenge-nine.git
+```
+
+- Client configs
+
+```bash
+cd development-challenge-nine/client
+
+npm install
+
+npm run dev
+```
+
+- Server configs
+
+```bash
+cd development-challenge-nine/server
+
+npm install
+
+npm run dev
+```
+
 ![logo medcloud-03 white copy](https://user-images.githubusercontent.com/46347123/158176045-de9fefb0-35e2-4515-83ff-c132608aa870.png)
 
 About Medcloud:
@@ -24,7 +83,7 @@ Medcloud's challenge for Dev Full Stack.
 - You need to develop both the front-end and the back-end.
 - In the front-end you MUST use React.
 - In the back-end you MUST use Node.js.
-- The patient data should not be static  (You MUST use a cloud database or a local database).
+- The patient data should not be static (You MUST use a cloud database or a local database).
 - Field validation (date, required fields, etc).
 
 ## Extra Points
@@ -55,7 +114,7 @@ According to the above criteria, we will evaluate your test in order to proceed 
 
 ## Delivery
 
-You MUST fork this repository to your own account and push you code to it. 
+You MUST fork this repository to your own account and push you code to it.
 When you finish it, you must send a email to cv@medcloud.com.br with your curriculum and your fork.
 
 Good luck! Any doubts, feel free to send an email to cv@medcloud.com.br.
