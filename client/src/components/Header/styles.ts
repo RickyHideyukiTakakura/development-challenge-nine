@@ -7,4 +7,10 @@ export const HeaderContainer = styled.header`
   gap: 10rem;
 
   padding: 2.5rem 3.5rem;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 2rem;
+  }
 `;
+

@@ -6,6 +6,10 @@ export const FormContainer = styled.form`
   gap: 2rem;
 
   width: 50%;
+
+  @media (max-width: 768px) {
+    margin-top: 10rem;
+  }
 `;
 
 export const Avatar = styled.div`
@@ -56,4 +60,6 @@ export const ButtonContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-around;
+
+  margin-bottom: 2rem;
 `;

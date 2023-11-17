@@ -1,4 +1,4 @@
-import { PatientForm } from "../../components/PatientForm";
+import { CreatePatientForm } from "../../components/CreatePatientForm";
 import { ReturnButton } from "../../components/ReturnButton";
 import { NewContainer } from "./styles";
 
@@ -6,7 +6,7 @@ export function New() {
   return (
     <NewContainer>
       <ReturnButton />
-      <PatientForm title="Register patient" isNewPatient />
+      <CreatePatientForm />
     </NewContainer>
   );
 }
