@@ -14,6 +14,7 @@ export const DetailsContainer = styled.main`
     width: 20rem;
     height: 20rem;
     border-radius: 50%;
+    object-fit: cover;
   }
 
   div {

@@ -17,5 +17,7 @@ export const Avatar = styled.div`
     height: 2rem;
 
     border-radius: 50%;
+
+    object-fit: cover;
   }
 `;
