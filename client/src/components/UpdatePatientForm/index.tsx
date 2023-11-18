@@ -23,6 +23,8 @@ type UpdatePatientFormData = zod.infer<typeof patientValidationFormSchema>;
 
 export function UpdatePatientForm() {
   const [patient, setPatient] = useState<PatientProps | null>(null);
+  const [avatar, setAvatar] = useState(avatarPlaceholder);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
   const updatePatientForm = useForm<UpdatePatientFormData>({
     resolver: zodResolver(patientValidationFormSchema),
@@ -40,9 +42,6 @@ export function UpdatePatientForm() {
     handleSubmit,
     formState: { errors },
   } = updatePatientForm;
-
-  const [avatar, setAvatar] = useState(avatarPlaceholder);
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
 
   const params = useParams();
   const navigate = useNavigate();
