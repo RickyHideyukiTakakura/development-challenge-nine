@@ -7,10 +7,13 @@ Project developed for the full-stack developer challenge.
 ### Front-end
 
 - [ReactJS](https://react.dev/)
+- [React-Hook-Form](https://react-hook-form.com/)
+- [React-Router](https://reactrouter.com/en/main)
 - [Typescript](https://www.typescriptlang.org/)
 - [Material UI](https://mui.com/material-ui/)
 - [Styled-Components](https://styled-components.com/)
 - [Axios](https://axios-http.com/)
+- [Zod](https://zod.dev/)
 
 ### Back-end
 
