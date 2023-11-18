@@ -1,23 +1,49 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import { Button, TextField } from "@mui/material";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ChangeEvent, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
+import * as zod from "zod";
 import avatarPlaceholder from "../../assets/avatar_placeholder.jpeg";
 import { PatientProps } from "../../pages/Home/components/PatientsList";
 import { api } from "../../services/api";
 import { Avatar, AvatarInput, ButtonContainer, FormContainer } from "./styles";
 
+const patientValidationFormSchema = zod.object({
+  name: zod.string(),
+  email: zod.string().email().nullable(),
+  birthDate: zod.string(),
+  address: zod.string(),
+});
+
+type UpdatePatientFormData = zod.infer<typeof patientValidationFormSchema>;
+
 export function UpdatePatientForm() {
   const [patient, setPatient] = useState<PatientProps | null>(null);
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [birthDate, setBirthDate] = useState("");
-  const [address, setAddress] = useState("");
+  const updatePatientForm = useForm<UpdatePatientFormData>({
+    resolver: zodResolver(patientValidationFormSchema),
+    defaultValues: {
+      name: patient ? patient.name : "",
+      email: patient && patient.email,
+      birthDate: patient ? patient.birth_date : "",
+      address: patient ? patient.address : "",
+    },
+  });
+
+  const {
+    register,
+    watch,
+    handleSubmit,
+    formState: { errors },
+  } = updatePatientForm;
+
   const [avatar, setAvatar] = useState(avatarPlaceholder);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+
   const params = useParams();
   const navigate = useNavigate();
 
@@ -60,17 +86,17 @@ export function UpdatePatientForm() {
     }
   }
 
-  async function handleUpdatePatient() {
+  async function handleUpdatePatient(data: UpdatePatientFormData) {
     try {
       if (!patient) {
         return alert("Patient data is missing");
       }
 
       const updatePatient = {
-        name: name || patient.name,
-        email: email || patient.email,
-        birth_date: formatDate(birthDate) || patient.birth_date,
-        address: address || patient.address,
+        name: data.name || patient.name,
+        email: data.email || patient.email,
+        birth_date: formatDate(data.birthDate) || patient.birth_date,
+        address: data.address || patient.address,
       };
 
       if (avatarFile) {
@@ -103,6 +129,11 @@ export function UpdatePatientForm() {
     }
   }
 
+  watch("name");
+  watch("email");
+  watch("birthDate");
+  watch("address");
+
   useEffect(() => {
     async function fetchPatient() {
       try {
@@ -127,7 +158,7 @@ export function UpdatePatientForm() {
   }, [patient]);
 
   return (
-    <FormContainer>
+    <FormContainer onSubmit={handleSubmit(handleUpdatePatient)}>
       <Avatar>
         <img src={avatar} alt="User avatar" />
 
@@ -142,16 +173,18 @@ export function UpdatePatientForm() {
         id="name"
         label="Name"
         variant="outlined"
-        onChange={(event) => setName(event.target.value)}
-        required
+        {...register("name")}
+        error={!!errors.name}
+        helperText={errors.name ? errors.name.message : ""}
       />
 
       <TextField
         id="email"
         label="Email"
         variant="outlined"
-        onChange={(event) => setEmail(event.target.value)}
-        required
+        {...register("email")}
+        error={!!errors.email}
+        helperText={errors.email ? errors.email.message : ""}
       />
 
       <TextField
@@ -160,16 +193,18 @@ export function UpdatePatientForm() {
         label="Birth Date"
         variant="outlined"
         InputLabelProps={{ shrink: true }}
-        onChange={(event) => setBirthDate(event.target.value)}
-        required
+        {...register("birthDate")}
+        error={!!errors.birthDate}
+        helperText={errors.birthDate ? errors.birthDate.message : ""}
       />
 
       <TextField
         id="address"
         label="Address"
         variant="outlined"
-        onChange={(event) => setAddress(event.target.value)}
-        required
+        {...register("address")}
+        error={!!errors.address}
+        helperText={errors.address ? errors.address.message : ""}
       />
 
       <ButtonContainer>
@@ -177,7 +212,7 @@ export function UpdatePatientForm() {
           Delete patient
         </Button>
 
-        <Button variant="contained" onClick={handleUpdatePatient}>
+        <Button variant="contained" type="submit">
           Update patient
         </Button>
       </ButtonContainer>

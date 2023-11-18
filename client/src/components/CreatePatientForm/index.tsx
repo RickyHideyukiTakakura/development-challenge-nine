@@ -1,21 +1,46 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import { Button, TextField } from "@mui/material";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ChangeEvent, useState } from "react";
+import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import * as zod from "zod";
 import avatarPlaceholder from "../../assets/avatar_placeholder.jpeg";
 import { api } from "../../services/api";
 import { Avatar, AvatarInput, ButtonContainer, FormContainer } from "./styles";
 
+const patientValidationFormSchema = zod.object({
+  name: zod.string().min(1, "Enter a patient name"),
+  email: zod.string().email("Enter a valid email address."),
+  birthDate: zod.string().min(1).max(10),
+  address: zod.string().min(1),
+});
+
+type NewPatientFormData = zod.infer<typeof patientValidationFormSchema>;
+
 export function CreatePatientForm() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [birthDate, setBirthDate] = useState("");
-  const [address, setAddress] = useState("");
   const [avatar, setAvatar] = useState(avatarPlaceholder);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const navigate = useNavigate();
+
+  const newPatientForm = useForm<NewPatientFormData>({
+    resolver: zodResolver(patientValidationFormSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      birthDate: undefined,
+      address: "",
+    },
+  });
+
+  const {
+    register,
+    watch,
+    handleSubmit,
+    formState: { errors },
+  } = newPatientForm;
 
   function formatDate(dateString: string | undefined) {
     if (!dateString) {
@@ -53,21 +78,17 @@ export function CreatePatientForm() {
     }
   }
 
-  async function handleCreateNewPatient() {
+  async function handleCreateNewPatient(data: NewPatientFormData) {
     try {
-      if (!name || !email || !birthDate || !address) {
-        return alert("Please fill all fields");
-      }
-
       const uploadedAvatarFileName = avatarFile
         ? await uploadAvatar(avatarFile)
         : "";
 
       const newPatient = {
-        name,
-        email,
-        birth_date: formatDate(birthDate),
-        address,
+        name: data.name,
+        email: data.email,
+        birth_date: formatDate(data.birthDate),
+        address: data.address,
         avatar: uploadedAvatarFileName,
       };
 
@@ -81,8 +102,13 @@ export function CreatePatientForm() {
     }
   }
 
+  watch("name");
+  watch("email");
+  watch("birthDate");
+  watch("address");
+
   return (
-    <FormContainer>
+    <FormContainer onSubmit={handleSubmit(handleCreateNewPatient)}>
       <Avatar>
         <img src={avatar} alt="Foto do usuário" />
 
@@ -97,7 +123,9 @@ export function CreatePatientForm() {
         id="name"
         label="Name"
         variant="outlined"
-        onChange={(event) => setName(event.target.value)}
+        {...register("name")}
+        error={!!errors.name}
+        helperText={errors.name ? errors.name.message : ""}
         required
       />
 
@@ -105,7 +133,9 @@ export function CreatePatientForm() {
         id="email"
         label="Email"
         variant="outlined"
-        onChange={(event) => setEmail(event.target.value)}
+        {...register("email")}
+        error={!!errors.email}
+        helperText={errors.email ? errors.email.message : ""}
         required
       />
 
@@ -115,7 +145,9 @@ export function CreatePatientForm() {
         label="Birth Date"
         variant="outlined"
         InputLabelProps={{ shrink: true }}
-        onChange={(event) => setBirthDate(event.target.value)}
+        {...register("birthDate")}
+        error={!!errors.birthDate}
+        helperText={errors.birthDate ? errors.birthDate.message : ""}
         required
       />
 
@@ -123,12 +155,14 @@ export function CreatePatientForm() {
         id="address"
         label="Address"
         variant="outlined"
-        onChange={(event) => setAddress(event.target.value)}
+        {...register("address")}
+        error={!!errors.address}
+        helperText={errors.address ? errors.address.message : ""}
         required
       />
 
       <ButtonContainer>
-        <Button variant="contained" onClick={handleCreateNewPatient}>
+        <Button type="submit" variant="contained">
           Register patient
         </Button>
       </ButtonContainer>
