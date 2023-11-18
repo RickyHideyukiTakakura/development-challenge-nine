@@ -10,16 +10,30 @@ import {
   TableRow,
 } from "@mui/material";
 import { ChangeEvent, useEffect, useState } from "react";
+import { useQuery } from "react-query";
 import { useLocation, useNavigate } from "react-router-dom";
 import avatarPlaceholder from "../../../../assets/avatar_placeholder.jpeg";
-import { PatientData } from "../../../../contexts/PatientsContext";
 import { api } from "../../../../services/api";
 import { Avatar, PatientList } from "./styles";
 
+export interface PatientData {
+  id: string;
+  name: string;
+  email: string;
+  birth_date: string;
+  address: string;
+  avatar: string;
+}
+
 export function PatientsList() {
-  const [patients, setPatients] = useState<PatientData[]>([]);
   const [filteredPatients, setFilteredPatients] = useState<PatientData[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+
+  const {
+    data: patients = [],
+    isLoading,
+    isError,
+  } = useQuery<PatientData[]>("patients", fetchPatients);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -36,6 +50,11 @@ export function PatientsList() {
     indexOfLastPatient
   );
 
+  async function fetchPatients() {
+    const response = await api.get(`/patients`);
+    return response.data;
+  }
+
   function handlePageChange(_event: ChangeEvent<unknown>, page: number) {
     setCurrentPage(page);
   }
@@ -51,20 +70,6 @@ export function PatientsList() {
   }
 
   useEffect(() => {
-    async function fetchPatients() {
-      try {
-        const response = await api.get(`/patients`);
-        setPatients(response.data);
-      } catch (error) {
-        console.error("Error fetch patients: ", error);
-        alert("Failed to fetch patients");
-      }
-    }
-
-    fetchPatients();
-  }, []);
-
-  useEffect(() => {
     const filtered = patients.filter((patient) =>
       patient.name.includes(search)
     );
@@ -75,7 +80,11 @@ export function PatientsList() {
 
   return (
     <PatientList>
-      {patients.length !== 0 ? (
+      {isLoading ? (
+        <p>Loading....</p>
+      ) : isError || !patients ? (
+        <h1>No patients found</h1>
+      ) : (
         <>
           <TableContainer component={Paper}>
             <Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -124,8 +133,6 @@ export function PatientsList() {
             style={{ marginTop: "10px" }}
           />
         </>
-      ) : (
-        <h1>No patients founded</h1>
       )}
     </PatientList>
   );

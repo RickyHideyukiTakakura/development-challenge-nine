@@ -3,12 +3,13 @@ import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import { Button, TextField } from "@mui/material";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ChangeEvent, useContext, useEffect, useState } from "react";
+import { ChangeEvent, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useQuery } from "react-query";
 import { useNavigate, useParams } from "react-router-dom";
 import * as zod from "zod";
 import avatarPlaceholder from "../../assets/avatar_placeholder.jpeg";
-import { PatientData, PatientsContext } from "../../contexts/PatientsContext";
+import { PatientData } from "../../pages/Home/components/PatientsList";
 import { api } from "../../services/api";
 import { Avatar, AvatarInput, ButtonContainer, FormContainer } from "./styles";
 
@@ -22,7 +23,13 @@ const patientValidationFormSchema = zod.object({
 type UpdatePatientFormData = zod.infer<typeof patientValidationFormSchema>;
 
 export function UpdatePatientForm() {
-  const { patientById, fetchPatientById } = useContext(PatientsContext);
+  const params = useParams();
+  const navigate = useNavigate();
+
+  const { data: patientById } = useQuery<PatientData>(
+    ["patient", params.id],
+    fetchPatient
+  );
 
   const avatarUrl =
     patientById && patientById.avatar
@@ -31,9 +38,6 @@ export function UpdatePatientForm() {
 
   const [avatar, setAvatar] = useState(avatarUrl);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
-
-  const params = useParams();
-  const navigate = useNavigate();
 
   const updatePatientForm = useForm<UpdatePatientFormData>({
     resolver: zodResolver(patientValidationFormSchema),
@@ -51,6 +55,11 @@ export function UpdatePatientForm() {
     handleSubmit,
     formState: { errors },
   } = updatePatientForm;
+
+  async function fetchPatient() {
+    const response = await api.get(`/patients/${params.id}`);
+    return response.data;
+  }
 
   function formatDate(dateString: string | null) {
     if (!dateString) {
@@ -140,12 +149,6 @@ export function UpdatePatientForm() {
   watch("email");
   watch("birthDate");
   watch("address");
-
-  useEffect(() => {
-    if (params.id && patientById && params.id === patientById.id) {
-      fetchPatientById(params.id);
-    }
-  }, [fetchPatientById, params.id, patientById]);
 
   return (
     <FormContainer onSubmit={handleSubmit(handleUpdatePatient)}>

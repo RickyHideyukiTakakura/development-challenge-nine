@@ -1,18 +1,20 @@
 import { ThemeProvider } from "@mui/material";
+import { QueryClient, QueryClientProvider } from "react-query";
 import { BrowserRouter } from "react-router-dom";
 import { Router } from "./Router";
-import { PatientsContextProvider } from "./contexts/PatientsContext";
 import { GlobalStyle } from "./styles/global";
 import { theme } from "./styles/theme";
+
+const queryClient = new QueryClient();
 
 export function App() {
   return (
     <ThemeProvider theme={theme}>
-      <BrowserRouter>
-        <PatientsContextProvider>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
           <Router />
-        </PatientsContextProvider>
-      </BrowserRouter>
+        </BrowserRouter>
+      </QueryClientProvider>
 
       <GlobalStyle />
     </ThemeProvider>

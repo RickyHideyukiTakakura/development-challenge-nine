@@ -1,40 +1,53 @@
 import { Edit } from "@mui/icons-material";
 import { Button } from "@mui/material";
-import { useContext, useEffect } from "react";
+import { useEffect } from "react";
+import { useQuery } from "react-query";
 import { useNavigate, useParams } from "react-router-dom";
 import avatarPlaceholder from "../../assets/avatar_placeholder.jpeg";
 import { ReturnButton } from "../../components/ReturnButton";
-import { PatientsContext } from "../../contexts/PatientsContext";
 import { api } from "../../services/api";
+import { PatientData } from "../Home/components/PatientsList";
 import { DetailsContainer } from "./styles";
 
 export function Details() {
-  const { patientById, fetchPatientById } = useContext(PatientsContext);
+  const navigate = useNavigate();
+  const params = useParams();
+
+  const {
+    data: patientById,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery<PatientData>(["patient", params.id], fetchPatient);
 
   const avatarUrl =
     patientById && patientById.avatar
       ? `${api.defaults.baseURL}/files/${patientById.avatar}`
       : avatarPlaceholder;
 
-  const navigate = useNavigate();
-  const params = useParams();
+  async function fetchPatient() {
+    const response = await api.get(`/patients/${params.id}`);
+    return response.data;
+  }
 
   function handleNavigateToEdit() {
     navigate(`/edit/${params.id}`);
   }
 
   useEffect(() => {
-    if (params.id) {
-      fetchPatientById(params.id);
-    }
-  }, [fetchPatientById, params.id]);
+    refetch();
+  }, [params.id, refetch]);
 
   return (
     <DetailsContainer>
       <ReturnButton />
-      {patientById ? (
+      {isLoading ? (
+        <p>Loading...</p>
+      ) : isError || !patientById ? (
+        <h1>No patient found</h1>
+      ) : (
         <>
-          <img src={avatarUrl} />
+          <img src={avatarUrl} alt="Patient avatar" />
 
           <div>
             <h2>Patient details</h2>
@@ -51,8 +64,6 @@ export function Details() {
             </Button>
           </div>
         </>
-      ) : (
-        <h1>No patients found</h1>
       )}
     </DetailsContainer>
   );
