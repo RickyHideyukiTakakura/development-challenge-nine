@@ -3,36 +3,45 @@ import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import { Button, TextField } from "@mui/material";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useContext, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import * as zod from "zod";
 import avatarPlaceholder from "../../assets/avatar_placeholder.jpeg";
-import { PatientProps } from "../../pages/Home/components/PatientsList";
+import { PatientData, PatientsContext } from "../../contexts/PatientsContext";
 import { api } from "../../services/api";
 import { Avatar, AvatarInput, ButtonContainer, FormContainer } from "./styles";
 
 const patientValidationFormSchema = zod.object({
-  name: zod.string(),
+  name: zod.string().nullable(),
   email: zod.string().email().nullable(),
-  birthDate: zod.string(),
-  address: zod.string(),
+  birthDate: zod.string().nullable(),
+  address: zod.string().nullable(),
 });
 
 type UpdatePatientFormData = zod.infer<typeof patientValidationFormSchema>;
 
 export function UpdatePatientForm() {
-  const [patient, setPatient] = useState<PatientProps | null>(null);
-  const [avatar, setAvatar] = useState(avatarPlaceholder);
+  const { patientById, fetchPatientById } = useContext(PatientsContext);
+
+  const avatarUrl =
+    patientById && patientById.avatar
+      ? `${api.defaults.baseURL}/files/${patientById.avatar}`
+      : avatarPlaceholder;
+
+  const [avatar, setAvatar] = useState(avatarUrl);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
+
+  const params = useParams();
+  const navigate = useNavigate();
 
   const updatePatientForm = useForm<UpdatePatientFormData>({
     resolver: zodResolver(patientValidationFormSchema),
     defaultValues: {
-      name: patient ? patient.name : "",
-      email: patient && patient.email,
-      birthDate: patient ? patient.birth_date : "",
-      address: patient ? patient.address : "",
+      name: patientById ? patientById.name : "",
+      email: patientById && patientById.email,
+      birthDate: null,
+      address: patientById ? patientById.address : "",
     },
   });
 
@@ -43,10 +52,7 @@ export function UpdatePatientForm() {
     formState: { errors },
   } = updatePatientForm;
 
-  const params = useParams();
-  const navigate = useNavigate();
-
-  function formatDate(dateString: string | undefined) {
+  function formatDate(dateString: string | null) {
     if (!dateString) {
       return "";
     }
@@ -55,7 +61,7 @@ export function UpdatePatientForm() {
     return format(date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
   }
 
-  async function updateAvatarFile(patient: PatientProps, avatarFilename: File) {
+  async function updateAvatarFile(patient: PatientData, avatarFilename: File) {
     try {
       if (avatarFilename) {
         const fileUploadForm = new FormData();
@@ -87,19 +93,21 @@ export function UpdatePatientForm() {
 
   async function handleUpdatePatient(data: UpdatePatientFormData) {
     try {
-      if (!patient) {
+      if (!patientById) {
         return alert("Patient data is missing");
       }
 
       const updatePatient = {
-        name: data.name || patient.name,
-        email: data.email || patient.email,
-        birth_date: formatDate(data.birthDate) || patient.birth_date,
-        address: data.address || patient.address,
+        name: data.name || patientById.name,
+        email: data.email || patientById.email,
+        birth_date: data.birthDate
+          ? formatDate(data.birthDate)
+          : patientById.birth_date,
+        address: data.address || patientById.address,
       };
 
       if (avatarFile) {
-        await updateAvatarFile(patient, avatarFile);
+        await updateAvatarFile(patientById, avatarFile);
       }
 
       await api.put(`/patients/${params.id}`, updatePatient);
@@ -134,27 +142,10 @@ export function UpdatePatientForm() {
   watch("address");
 
   useEffect(() => {
-    async function fetchPatient() {
-      try {
-        const response = await api.get(`/patients/${params.id}`);
-        setPatient(response.data);
-      } catch (error) {
-        console.error("Error fetch patient:", error);
-        alert("Failed to fetch patient.");
-      }
+    if (params.id && patientById && params.id === patientById.id) {
+      fetchPatientById(params.id);
     }
-
-    fetchPatient();
-  }, [params.id]);
-
-  useEffect(() => {
-    const avatarUrl =
-      patient && patient.avatar
-        ? `${api.defaults.baseURL}/files/${patient.avatar}`
-        : avatarPlaceholder;
-
-    setAvatar(avatarUrl);
-  }, [patient]);
+  }, [fetchPatientById, params.id, patientById]);
 
   return (
     <FormContainer onSubmit={handleSubmit(handleUpdatePatient)}>
