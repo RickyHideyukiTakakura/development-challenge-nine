@@ -18,26 +18,25 @@ import { Avatar, PatientList } from "./styles";
 
 export function PatientsList() {
   const [patients, setPatients] = useState<PatientData[]>([]);
-
   const [filteredPatients, setFilteredPatients] = useState<PatientData[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
 
   const navigate = useNavigate();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const search = searchParams.get("search") || "";
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredPatients.slice(
-    indexOfFirstItem,
-    indexOfLastItem
+  const patientsPerPage = 5;
+  const totalPages = Math.ceil(filteredPatients.length / patientsPerPage);
+
+  const indexOfLastPatient = currentPage * patientsPerPage;
+  const indexOfFirstPatient = indexOfLastPatient - patientsPerPage;
+  const patientsToBeDisplayed = filteredPatients.slice(
+    indexOfFirstPatient,
+    indexOfLastPatient
   );
 
-  const totalPages = Math.ceil(filteredPatients.length / itemsPerPage);
-
-  function handlePageChange(event: ChangeEvent<unknown>, page: number) {
+  function handlePageChange(_event: ChangeEvent<unknown>, page: number) {
     setCurrentPage(page);
   }
 
@@ -90,7 +89,7 @@ export function PatientsList() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {currentItems.map((patient) => (
+                {patientsToBeDisplayed.map((patient) => (
                   <TableRow
                     key={patient.id}
                     sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
