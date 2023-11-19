@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { PatientFormType, PatientType } from "../interfaces/IPatients";
+import { PatientType } from "../interfaces/IPatients";
 import { deletePatient, getPatientById, putPatient } from "../services/api";
 
 export function usePatientById(patientId?: string) {
@@ -13,7 +13,7 @@ export function usePatientById(patientId?: string) {
     },
   });
 
-  function updatePatient(id: string, patient: PatientFormType) {
+  function updatePatient(id: string, patient: PatientType) {
     putPatient(id, patient);
   }
 

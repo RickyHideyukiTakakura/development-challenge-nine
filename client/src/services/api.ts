@@ -1,11 +1,11 @@
 import axios from "axios";
-import { PatientFormType, PatientType } from "../interfaces/IPatients";
+import { PatientType } from "../interfaces/IPatients";
 
 export const api = axios.create({
   baseURL: "http://localhost:3333",
 });
 
-export async function postPatient(patient: PatientFormType) {
+export async function postPatient(patient: PatientType) {
   const response = await api.post(`/patients`, patient);
   return response.data;
 }

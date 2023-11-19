@@ -1,9 +1,9 @@
 import { Button, TableCell, TableRow } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import avatarPlaceholder from "../../../../assets/avatar_placeholder.jpeg";
+import { PatientType } from "../../../../interfaces/IPatients";
 import { api } from "../../../../services/api";
 import { Avatar } from "./styles";
-import { PatientType } from "../../../../interfaces/IPatients";
 
 interface PatientsRowProps {
   patient: PatientType;
@@ -34,7 +34,9 @@ export function PatientsRow({ patient }: PatientsRowProps) {
       <TableCell align="right">{patient.birth_date}</TableCell>
       <TableCell align="right">{patient.address}</TableCell>
       <TableCell align="center">
-        <Button onClick={() => handleNavigateToDetails(patient.id)}>
+        <Button
+          onClick={() => patient.id && handleNavigateToDetails(patient.id)}
+        >
           View
         </Button>
       </TableCell>

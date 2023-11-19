@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { PatientData, PatientFormType } from "../interfaces/IPatients";
+import { PatientData, PatientType } from "../interfaces/IPatients";
 import { getPatients, postPatient } from "../services/api";
 
 export function usePatient(page = 1, patientsPerPage = 5, enabled = true) {
@@ -9,7 +9,7 @@ export function usePatient(page = 1, patientsPerPage = 5, enabled = true) {
     enabled,
   });
 
-  function createPatient(patient: PatientFormType) {
+  function createPatient(patient: PatientType) {
     postPatient(patient);
   }
 

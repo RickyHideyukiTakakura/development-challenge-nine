@@ -1,12 +1,5 @@
-export interface PatientFormType {
-  name: string;
-  email: string;
-  birth_date: string;
-  address: string;
-}
-
 export interface PatientType {
-  id: string;
+  id?: string;
   name: string;
   email: string;
   birth_date: string;
