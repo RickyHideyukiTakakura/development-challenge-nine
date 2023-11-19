@@ -1,15 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import { Button, TextField } from "@mui/material";
-import { format, parseISO } from "date-fns";
+import { format, parse, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ChangeEvent, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useQuery } from "react-query";
 import { useNavigate, useParams } from "react-router-dom";
 import * as zod from "zod";
 import avatarPlaceholder from "../../assets/avatar_placeholder.jpeg";
-import { PatientData } from "../../pages/Home/components/PatientsList";
+import { usePatientById } from "../../hooks/usePatientById";
+import { PatientType } from "../../interfaces/IPatients";
 import { api } from "../../services/api";
 import { Avatar, AvatarInput, ButtonContainer, FormContainer } from "./styles";
 
@@ -22,19 +22,19 @@ const patientValidationFormSchema = zod.object({
 
 type UpdatePatientFormData = zod.infer<typeof patientValidationFormSchema>;
 
-export function UpdatePatientForm() {
-  const params = useParams();
+interface UpdatePatientFormProps {
+  patient: PatientType;
+}
+
+export function UpdatePatientForm({ patient }: UpdatePatientFormProps) {
   const navigate = useNavigate();
+  const params = useParams();
 
-  const { data: patientById } = useQuery<PatientData>(
-    ["patient", params.id],
-    fetchPatient
-  );
+  const { updatePatient, delPatient } = usePatientById();
 
-  const avatarUrl =
-    patientById && patientById.avatar
-      ? `${api.defaults.baseURL}/files/${patientById.avatar}`
-      : avatarPlaceholder;
+  const avatarUrl = patient.avatar
+    ? `${api.defaults.baseURL}/files/${patient.avatar}`
+    : avatarPlaceholder;
 
   const [avatar, setAvatar] = useState(avatarUrl);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -42,10 +42,10 @@ export function UpdatePatientForm() {
   const updatePatientForm = useForm<UpdatePatientFormData>({
     resolver: zodResolver(patientValidationFormSchema),
     defaultValues: {
-      name: patientById ? patientById.name : "",
-      email: patientById && patientById.email,
-      birthDate: null,
-      address: patientById ? patientById.address : "",
+      name: patient.name,
+      email: patient.email,
+      birthDate: formatDateToDefault(patient.birth_date),
+      address: patient.address,
     },
   });
 
@@ -56,11 +56,6 @@ export function UpdatePatientForm() {
     formState: { errors },
   } = updatePatientForm;
 
-  async function fetchPatient() {
-    const response = await api.get(`/patients/${params.id}`);
-    return response.data;
-  }
-
   function formatDate(dateString: string | null) {
     if (!dateString) {
       return "";
@@ -70,7 +65,19 @@ export function UpdatePatientForm() {
     return format(date, "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
   }
 
-  async function updateAvatarFile(patient: PatientData, avatarFilename: File) {
+  function formatDateToDefault(dateString: string | null) {
+    if (!dateString) {
+      return "";
+    }
+
+    const date = parse(dateString, "dd 'de' MMMM 'de' yyyy", new Date(), {
+      locale: ptBR,
+    });
+
+    return format(date, "yyyy-MM-dd");
+  }
+
+  async function updateAvatarFile(patient: PatientType, avatarFilename: File) {
     try {
       if (avatarFilename) {
         const fileUploadForm = new FormData();
@@ -102,24 +109,22 @@ export function UpdatePatientForm() {
 
   async function handleUpdatePatient(data: UpdatePatientFormData) {
     try {
-      if (!patientById) {
-        return alert("Patient data is missing");
-      }
-
-      const updatePatient = {
-        name: data.name || patientById.name,
-        email: data.email || patientById.email,
+      const updatePatientData = {
+        name: data.name || patient.name,
+        email: data.email || patient.email,
         birth_date: data.birthDate
           ? formatDate(data.birthDate)
-          : patientById.birth_date,
-        address: data.address || patientById.address,
+          : patient.birth_date,
+        address: data.address || patient.address,
       };
 
       if (avatarFile) {
-        await updateAvatarFile(patientById, avatarFile);
+        await updateAvatarFile(patient, avatarFile);
       }
 
-      await api.put(`/patients/${params.id}`, updatePatient);
+      if (params.id) {
+        updatePatient(params.id, updatePatientData);
+      }
 
       alert("Patient has been updated successfully");
       navigate(-1);
@@ -136,8 +141,10 @@ export function UpdatePatientForm() {
 
     if (confirm) {
       try {
-        await api.delete(`/patients/${params.id}`);
-        navigate("/");
+        if (params.id) {
+          delPatient(params.id);
+          navigate("/");
+        }
       } catch (error) {
         console.error("Error deleting patient:", error);
         alert("Failed to delete patient.");

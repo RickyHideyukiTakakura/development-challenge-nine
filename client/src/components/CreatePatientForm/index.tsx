@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import * as zod from "zod";
 import avatarPlaceholder from "../../assets/avatar_placeholder.jpeg";
+import { usePatient } from "../../hooks/usePatient";
 import { api } from "../../services/api";
 import { Avatar, AvatarInput, ButtonContainer, FormContainer } from "./styles";
 
@@ -21,6 +22,8 @@ const patientValidationFormSchema = zod.object({
 type NewPatientFormData = zod.infer<typeof patientValidationFormSchema>;
 
 export function CreatePatientForm() {
+  const { createPatient } = usePatient();
+
   const [avatar, setAvatar] = useState(avatarPlaceholder);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const navigate = useNavigate();
@@ -92,7 +95,7 @@ export function CreatePatientForm() {
         avatar: uploadedAvatarFileName,
       };
 
-      await api.post("/patients", newPatient);
+      createPatient(newPatient);
 
       alert("Patient has been created successfully");
       navigate("/");

@@ -6,18 +6,3 @@ export const PatientList = styled.div`
   flex-direction: column;
   gap: 1rem;
 `;
-
-export const Avatar = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-
-  img {
-    width: 2rem;
-    height: 2rem;
-
-    border-radius: 50%;
-
-    object-fit: cover;
-  }
-`;
