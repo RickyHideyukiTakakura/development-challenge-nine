@@ -1,12 +1,23 @@
+import { Pagination } from "@mui/material";
+import { ChangeEvent, useState } from "react";
 import { usePatient } from "../../hooks/usePatient";
 import { PatientsList } from "./components/PatientsList";
 import { HomeContainer } from "./styles";
 
 export function Home() {
-  const { data, isLoading, isError } = usePatient();
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const { data, isLoading, isError } = usePatient(currentPage);
 
   if (!data) {
     return null;
+  }
+
+  const totalPatients = data.patients.length;
+  const totalPages = Math.ceil(data.totalCount / totalPatients);
+
+  async function handlePageChange(_event: ChangeEvent<unknown>, page: number) {
+    setCurrentPage(page);
   }
 
   if (isLoading) {
@@ -21,7 +32,13 @@ export function Home() {
     <HomeContainer>
       <h1>Patients</h1>
       <PatientsList patients={data.patients} />
-      {/* <Pagination /> */}
+      <Pagination
+        count={totalPages}
+        page={currentPage}
+        onChange={handlePageChange}
+        color="primary"
+        style={{ marginTop: "10px" }}
+      />
     </HomeContainer>
   );
 }

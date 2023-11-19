@@ -25,17 +25,25 @@ class PatientsController {
   }
 
   async index(request, response) {
-    const { name } = request.query;
+    const { name, page = 1, patientsPerPage = 5 } = request.query;
+    const offset = (page - 1) * patientsPerPage;
 
     let patient = knex("patients");
 
     if (name) {
-      patient = patient.whereLike("name", `%${search}%`);
+      patient = patient.where("name", "like", `%${name}%`);
     }
 
-    const filteredPatients = await patient.select("");
+    const totalCount = await patient.clone().count("* as totalCount").first();
+    const filteredPatients = await patient
+      .select("")
+      .limit(patientsPerPage)
+      .offset(offset);
 
-    return response.json(filteredPatients);
+    return response.json({
+      patients: filteredPatients,
+      totalCount: totalCount.totalCount,
+    });
   }
 
   async show(request, response) {

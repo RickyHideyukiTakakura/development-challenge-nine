@@ -2,10 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { PatientData, PatientFormType } from "../interfaces/IPatients";
 import { getPatients, postPatient } from "../services/api";
 
-export function usePatient(enabled = true) {
+export function usePatient(page = 1, patientsPerPage = 5, enabled = true) {
   const queryData = useQuery<PatientData>({
-    queryKey: ["patients"],
-    queryFn: getPatients,
+    queryKey: ["patients", page, patientsPerPage],
+    queryFn: () => getPatients(page, patientsPerPage),
     enabled,
   });
 

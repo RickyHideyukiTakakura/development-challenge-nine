@@ -1,11 +1,11 @@
 import axios from "axios";
-import { PatientType } from "../hooks/usePatient";
+import { PatientFormType, PatientType } from "../interfaces/IPatients";
 
 export const api = axios.create({
   baseURL: "http://localhost:3333",
 });
 
-export async function postPatient(patient: PatientType) {
+export async function postPatient(patient: PatientFormType) {
   const response = await api.post(`/patients`, patient);
   return response.data;
 }
@@ -20,8 +20,10 @@ export async function deletePatient(id: string) {
   return response.data;
 }
 
-export async function getPatients() {
-  const response = await api.get(`/patients`);
+export async function getPatients(page = 1, patientsPerPage = 5) {
+  const response = await api.get(
+    `/patients?page=${page}&patientsPerPage=${patientsPerPage}`
+  );
   return response.data;
 }
 
