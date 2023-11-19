@@ -7,14 +7,13 @@ import { HomeContainer } from "./styles";
 export function Home() {
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { data, isLoading, isError } = usePatient(currentPage);
+  const { data, patientsPerPage, isLoading, isError } = usePatient(currentPage);
 
   if (!data) {
     return null;
   }
 
-  const totalPatients = data.patients.length;
-  const totalPages = Math.ceil(data.totalCount / totalPatients);
+  const totalPages = Math.ceil(data.totalCount / patientsPerPage);
 
   async function handlePageChange(_event: ChangeEvent<unknown>, page: number) {
     setCurrentPage(page);

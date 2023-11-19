@@ -13,5 +13,5 @@ export function usePatient(page = 1, patientsPerPage = 5, enabled = true) {
     postPatient(patient);
   }
 
-  return { ...queryData, createPatient };
+  return { ...queryData, createPatient, patientsPerPage };
 }
