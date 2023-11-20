@@ -16,7 +16,7 @@ import { Avatar, AvatarInput, ButtonContainer, FormContainer } from "./styles";
 const patientValidationFormSchema = zod.object({
   name: zod.string().nullable(),
   email: zod.string().email().nullable(),
-  birthDate: zod.string().nullable(),
+  birthDate: zod.string().max(10).nullable(),
   address: zod.string().nullable(),
 });
 
@@ -123,14 +123,15 @@ export function UpdatePatientForm({ patient }: UpdatePatientFormProps) {
       }
 
       if (params.id) {
-        updatePatient(params.id, updatePatientData);
+        await updatePatient(params.id, updatePatientData);
       }
 
       alert("Patient has been updated successfully");
       navigate(-1);
-    } catch (error) {
-      console.error("Error updating patient:", error);
-      alert("Failed to update patient.");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      alert(`Failed to upload patient: ${error.response.data.message}.`);
+      throw new Error(error);
     }
   }
 

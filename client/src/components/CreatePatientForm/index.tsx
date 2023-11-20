@@ -95,13 +95,14 @@ export function CreatePatientForm() {
         avatar: uploadedAvatarFileName,
       };
 
-      createPatient(newPatient);
+      await createPatient(newPatient);
 
       alert("Patient has been created successfully");
       navigate("/");
-    } catch (error) {
-      console.error("Error creating new patient:", error);
-      alert("Failed to create patient. Please try again.");
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      alert(`Failed to create patient: ${error.response.data.message}.`);
+      throw new Error(error);
     }
   }
 

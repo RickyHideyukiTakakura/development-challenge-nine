@@ -13,12 +13,12 @@ export function usePatientById(patientId?: string) {
     },
   });
 
-  function updatePatient(id: string, patient: PatientType) {
-    putPatient(id, patient);
+  async function updatePatient(id: string, patient: PatientType) {
+    await putPatient(id, patient);
   }
 
-  function delPatient(id: string) {
-    deletePatient(id);
+  async function delPatient(id: string) {
+    await deletePatient(id);
   }
 
   return { ...queryData, updatePatient, delPatient };

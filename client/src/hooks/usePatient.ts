@@ -9,8 +9,8 @@ export function usePatient(page = 1, patientsPerPage = 5, enabled = true) {
     enabled,
   });
 
-  function createPatient(patient: PatientType) {
-    postPatient(patient);
+  async function createPatient(patient: PatientType) {
+    await postPatient(patient);
   }
 
   return { ...queryData, createPatient, patientsPerPage };
